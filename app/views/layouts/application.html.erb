@@ -17,14 +17,23 @@
     <link rel="icon" href="/icon.svg" type="image/svg+xml">
     <link rel="apple-touch-icon" href="/icon.png">
 
+    <!-- Mapbox GL CSS -->
+    <link href="https://api.mapbox.com/mapbox-gl-js/v3.1.2/mapbox-gl.css" rel="stylesheet">
+
     <%= stylesheet_link_tag "application", "data-turbo-track": "reload" %>
     <%= javascript_importmap_tags %>
   </head>
 
   <body>
+    <style>
+      body { padding-bottom: 4.5rem; }
+    </style>
     <%= yield %>
     <% flash.each do |key, message| %>
       <div class="alert alert-<%= key %>"><%= message %></div>
+    <% end %>
+    <% unless current_page?(root_path) %>
+      <%= render 'shared/navbar' %>
     <% end %>
   </body>
 </html>

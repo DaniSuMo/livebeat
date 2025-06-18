@@ -64,3 +64,4 @@ end
 
 gem "cssbundling-rails"
 gem "devise"
+gem "geocoder"
