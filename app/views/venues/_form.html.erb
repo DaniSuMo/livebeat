@@ -1,0 +1,24 @@
+<%= form_with(model: venue, class: "space-y-6") do |form| %>
+  <% if venue.errors.any? %>
+    <div class="bg-red-50 p-4 rounded-md">
+      <h2 class="text-red-800 font-medium mb-2">
+        <%= pluralize(venue.errors.count, "error") %> prohibited this venue from being saved:
+      </h2>
+      <ul class="list-disc list-inside text-red-600">
+        <% venue.errors.full_messages.each do |message| %>
+          <li><%= message %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <div>
+    <%= form.label :name, class: "block text-sm font-medium text-gray-700" %>
+    <%= form.text_field :name, class: "mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" %>
+  </div>
+
+  <div class="flex justify-end space-x-4">
+    <%= link_to 'Cancel', venues_path, class: "px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50" %>
+    <%= form.submit class: "px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600" %>
+  </div>
+<% end %>

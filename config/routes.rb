@@ -1,4 +1,18 @@
 Rails.application.routes.draw do
+  get "venues/index"
+  get "venues/new"
+  get "venues/create"
+  get "venues/show"
+  get "venues/edit"
+  get "venues/update"
+  get "venues/destroy"
+  get "scheduled_events/index"
+  get "scheduled_events/new"
+  get "scheduled_events/create"
+  get "scheduled_events/show"
+  get "scheduled_events/edit"
+  get "scheduled_events/update"
+  get "scheduled_events/destroy"
   devise_for :users
   # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
 
@@ -13,6 +27,10 @@ Rails.application.routes.draw do
   # Defines the root path route ("/")
   # root "posts#index"
   root "pages#welcome"
-  get "about", to: "pages#about"
-  get "contact", to: "pages#contact"
+  get "about", to: "pages#about", as: :pages_about
+  get "contact", to: "pages#contact", as: :pages_contact
+  get "welcome", to: "pages#welcome", as: :pages_welcome
+
+  resources :scheduled_events
+  resources :venues
 end

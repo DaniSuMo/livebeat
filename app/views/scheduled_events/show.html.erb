@@ -1,0 +1,45 @@
+<div class="container mx-auto px-4 py-8">
+  <div class="max-w-3xl mx-auto">
+    <div class="bg-white rounded-lg shadow-md overflow-hidden">
+      <div class="p-6">
+        <div class="flex justify-between items-start mb-6">
+          <h1 class="text-3xl font-bold"><%= @scheduled_event.title %></h1>
+          <div class="flex space-x-4">
+            <%= link_to 'Edit', edit_scheduled_event_path(@scheduled_event), class: "text-green-500 hover:text-green-700" %>
+            <%= button_to 'Delete', @scheduled_event, method: :delete, class: "text-red-500 hover:text-red-700", form: { data: { turbo_confirm: 'Are you sure?' } } %>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+          <div>
+            <h2 class="text-lg font-semibold mb-2">Event Details</h2>
+            <p class="text-gray-600 mb-2"><strong>Location:</strong> <%= @scheduled_event.location %></p>
+            <p class="text-gray-600 mb-2"><strong>Category:</strong> <%= @scheduled_event.category %></p>
+            <p class="text-gray-600 mb-2"><strong>Venue:</strong> <%= @scheduled_event.venue.name %></p>
+            <p class="text-gray-600 mb-2"><strong>Capacity:</strong> <%= @scheduled_event.capacity %></p>
+          </div>
+
+          <div>
+            <h2 class="text-lg font-semibold mb-2">Schedule</h2>
+            <p class="text-gray-600 mb-2">
+              <strong>Start:</strong> <%= @scheduled_event.starting_time.strftime("%B %d, %Y at %I:%M %p") %>
+            </p>
+            <p class="text-gray-600 mb-2">
+              <strong>End:</strong> <%= @scheduled_event.ending_time.strftime("%B %d, %Y at %I:%M %p") %>
+            </p>
+            <p class="text-gray-600 mb-2"><strong>Price:</strong> $<%= @scheduled_event.price %></p>
+          </div>
+        </div>
+
+        <div>
+          <h2 class="text-lg font-semibold mb-2">Description</h2>
+          <p class="text-gray-600"><%= @scheduled_event.description %></p>
+        </div>
+      </div>
+    </div>
+
+    <div class="mt-6">
+      <%= link_to 'Back to Events', scheduled_events_path, class: "text-blue-500 hover:text-blue-700" %>
+    </div>
+  </div>
+</div>
