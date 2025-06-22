@@ -1,37 +1,7 @@
-/* Tailwind CSS directives - these are valid Tailwind directives, not standard CSS */
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+/* Import base styles */
+@import "base.css";
 
-/* Custom styles for Mapbox map */
-.event-marker {
-  cursor: pointer;
-  transition: transform 0.2s ease-in-out;
-  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
-  transform-origin: bottom center;
-}
-
-.event-marker:hover {
-  transform: scale(1.1);
-}
-
-.event-marker .relative {
-  display: block;
-}
-
-.mapboxgl-popup-content {
-  border-radius: 8px;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-}
-
-.mapboxgl-popup-close-button {
-  font-size: 16px;
-  color: #6b7280;
-  padding: 4px 8px;
-}
-
-.mapboxgl-popup-close-button:hover {
-  color: #374151;
-  background-color: #f3f4f6;
-  border-radius: 4px;
-}
+/* Import component styles */
+@import "components/mapbox.css";
+@import "components/popup.css";
+@import "components/carousel.css";

@@ -1,13 +1,13 @@
 <div class="container mx-auto px-4 py-8" data-controller="page-refresh view-toggle">
-  <div class="flex justify-between items-center mb-6">
+  <div id="page-header" class="flex justify-between items-center mb-6">
     <h1 class="text-3xl font-bold">Scheduled Events</h1>
     <div class="flex items-center space-x-4">
       <!-- View Toggle -->
       <div class="flex bg-gray-200 rounded-lg p-1">
-        <button data-view-toggle-target="listViewBtn" data-action="click->view-toggle#showListView" class="px-3 py-1 rounded-md bg-white shadow-sm text-sm font-medium text-gray-900">
+        <button data-view-toggle-target="listViewBtn" data-action="click->view-toggle#showListView" class="px-3 py-1 rounded-md text-sm font-medium text-gray-600 hover:text-gray-900">
           List View
         </button>
-        <button data-view-toggle-target="mapViewBtn" data-action="click->view-toggle#showMapView" class="px-3 py-1 rounded-md text-sm font-medium text-gray-600 hover:text-gray-900">
+        <button data-view-toggle-target="mapViewBtn" data-action="click->view-toggle#showMapView" class="px-3 py-1 rounded-md bg-white shadow-sm text-sm font-medium text-gray-900">
           Map View
         </button>
       </div>
@@ -18,18 +18,17 @@
   </div>
 
   <!-- Map View -->
-  <div id="map-view" data-view-toggle-target="mapView" class="hidden">
-    <div class="w-full" style="height: 100vh;">
+  <div id="map-view" data-view-toggle-target="mapView">
+    <div class="w-full">
       <% if @mapbox_token.present? %>
         <div
           data-controller="map"
           data-map-token-value="<%= @mapbox_token %>"
           data-map-events-value="<%= @events_for_map.to_json %>"
           class="w-full h-full"
-          style="height: 100vh;"
         ></div>
       <% else %>
-        <div class="flex items-center justify-center h-full bg-gray-100 text-gray-500" style="height: 100vh;">
+        <div class="flex items-center justify-center h-full bg-gray-100 text-gray-500">
           <div class="text-center">
             <p class="text-lg font-semibold mb-2">Mapbox API Key Not Configured</p>
             <p class="text-sm">Please set the MAPBOX_API_KEY environment variable to display the map.</p>
@@ -40,10 +39,19 @@
   </div>
 
   <!-- List View -->
-  <div id="list-view" data-view-toggle-target="listView">
+  <div id="list-view" data-view-toggle-target="listView" class="hidden">
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
       <% @scheduled_events.each do |event| %>
         <div class="bg-white rounded-lg shadow-md overflow-hidden">
+          <% if event.photos.attached? %>
+            <div class="h-48 overflow-hidden">
+              <%= cl_image_tag event.photos.first.key,
+                  height: 300,
+                  width: 400,
+                  crop: :fill,
+                  class: "w-full h-full object-cover" %>
+            </div>
+          <% end %>
           <div class="p-6">
             <h2 class="text-xl font-semibold mb-2"><%= event.title %></h2>
             <p class="text-gray-600 mb-2"><%= event.location %></p>

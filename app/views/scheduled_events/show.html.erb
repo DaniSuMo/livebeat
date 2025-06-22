@@ -35,6 +35,23 @@
           <h2 class="text-lg font-semibold mb-2">Description</h2>
           <p class="text-gray-600"><%= @scheduled_event.description %></p>
         </div>
+
+        <% if @scheduled_event.photos.attached? %>
+          <div class="mt-6">
+            <h2 class="text-lg font-semibold mb-4">Event Photos</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              <% @scheduled_event.photos.each do |photo| %>
+                <div class="relative group">
+                  <%= cl_image_tag photo.key,
+                      height: 300,
+                      width: 400,
+                      crop: :fill,
+                      class: "w-full h-48 object-cover rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300" %>
+                </div>
+              <% end %>
+            </div>
+          </div>
+        <% end %>
       </div>
     </div>
 

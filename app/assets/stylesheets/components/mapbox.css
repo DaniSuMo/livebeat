@@ -1,0 +1,32 @@
+/* Custom styles for Mapbox map */
+.event-marker {
+  cursor: pointer;
+  transition: transform 0.2s ease-in-out;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+  transform-origin: bottom center;
+}
+
+.event-marker:hover {
+  transform: scale(1.1);
+}
+
+.event-marker .relative {
+  display: block;
+}
+
+/* Ensure popup tip is always visible */
+.mapboxgl-popup-tip {
+  z-index: 1;
+}
+
+/* Make sure popup doesn't extend beyond map bounds */
+.mapboxgl-popup {
+  max-width: 90vw;
+  max-height: 90vh;
+}
+
+/* Custom popup positioning to ensure visibility */
+.mapboxgl-popup-content {
+  position: relative;
+  z-index: 2;
+}

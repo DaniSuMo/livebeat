@@ -4,7 +4,8 @@ export default class extends Controller {
   static targets = ["listView", "mapView", "listViewBtn", "mapViewBtn"]
 
   connect() {
-    // Controller connected
+    // Initialize with map view as default
+    this.showMapView();
   }
 
   showListView() {
