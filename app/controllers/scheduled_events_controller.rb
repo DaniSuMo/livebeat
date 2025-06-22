@@ -16,10 +16,13 @@ class ScheduledEventsController < ApplicationController
         location: event.location,
         category: event.category,
         price: event.price,
-        starting_time: event.starting_time.strftime("%B %d, %Y at %I:%M %p"),
+        starting_time: event.starting_time.iso8601,
+        ending_time: event.ending_time.iso8601,
         latitude: event.latitude || 51.9225, # Fallback to Rotterdam coordinates
         longitude: event.longitude || 4.4792,
-        url: scheduled_event_path(event)
+        url: scheduled_event_path(event),
+        photos: event.photos.attached? ? event.photos.map { |photo| { key: photo.key, url: rails_blob_url(photo) } } : [],
+        cloud_name: ENV['CLOUDINARY_CLOUD_NAME'] || 'dos5yrffh'
       }
     end.compact
   end
@@ -85,7 +88,8 @@ class ScheduledEventsController < ApplicationController
       :ending_time,
       :description,
       :price,
-      :capacity
+      :capacity,
+      photos: []
     )
   end
 end

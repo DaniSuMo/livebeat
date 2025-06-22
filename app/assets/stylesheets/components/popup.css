@@ -1,0 +1,51 @@
+/* Mapbox popup content styles */
+.mapboxgl-popup-content {
+  border-radius: 1rem; /* 16px */
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  border: none;
+  padding: 0;
+  overflow: hidden;
+}
+
+/*
+  Use a highly specific selector to override Mapbox's default styles.
+  We target the button within our custom popup class that is a child of the body.
+*/
+body .custom-popup .mapboxgl-popup-close-button {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 28px;
+  height: 28px;
+  color: white;
+  background: linear-gradient(to right, #a855f7, #60a5fa);
+  border-radius: 50%;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+  transition: all 0.2s ease-in-out;
+}
+
+.custom-popup .mapboxgl-popup-close-button::after {
+  content: '×';
+  font-size: 24px;
+  font-weight: 300;
+  line-height: 28px; /* Match height for vertical centering */
+  color: white;
+}
+
+.custom-popup .mapboxgl-popup-close-button:hover {
+  transform: scale(1.1);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+  background: linear-gradient(to right, #8b5cf6, #3b82f6);
+}
+
+/* Custom popup styles */
+.custom-popup .mapboxgl-popup-content {
+  max-width: 320px;
+  max-height: 80vh;
+  overflow-y: auto;
+}

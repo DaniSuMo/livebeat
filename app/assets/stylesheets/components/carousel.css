@@ -1,0 +1,30 @@
+/* Carousel styles */
+.photo-carousel {
+  position: relative;
+  transition: all 0.3s ease-in-out;
+}
+
+.photo-carousel img {
+  transition: opacity 0.3s ease-in-out;
+}
+
+.carousel-dot {
+  transition: all 0.2s ease-in-out;
+  cursor: pointer;
+}
+
+.carousel-dot:hover {
+  transform: scale(1.2);
+}
+
+.carousel-prev,
+.carousel-next {
+  transition: all 0.2s ease-in-out;
+  cursor: pointer;
+}
+
+.carousel-prev:hover,
+.carousel-next:hover {
+  transform: scale(1.1);
+  background-color: rgba(0, 0, 0, 0.7) !important;
+}
