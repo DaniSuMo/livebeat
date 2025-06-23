@@ -14,6 +14,18 @@
           <div>
             <h2 class="text-lg font-semibold mb-2">Event Details</h2>
             <p class="text-gray-600 mb-2"><strong>Location:</strong> <%= @scheduled_event.location %></p>
+            <% if @scheduled_event.latitude.present? && @scheduled_event.longitude.present? %>
+              <p class="text-gray-600 mb-2">
+                <strong>Coordinates:</strong>
+                <span class="text-green-600">✓ Located</span>
+                <span class="text-xs text-gray-500">(<%= @scheduled_event.latitude.round(6) %>, <%= @scheduled_event.longitude.round(6) %>)</span>
+              </p>
+            <% else %>
+              <p class="text-gray-600 mb-2">
+                <strong>Coordinates:</strong>
+                <span class="text-yellow-600">⚠ Location not found</span>
+              </p>
+            <% end %>
             <p class="text-gray-600 mb-2"><strong>Category:</strong> <%= @scheduled_event.category %></p>
             <p class="text-gray-600 mb-2"><strong>Venue:</strong> <%= @scheduled_event.venue.name %></p>
             <p class="text-gray-600 mb-2"><strong>Capacity:</strong> <%= @scheduled_event.capacity %></p>

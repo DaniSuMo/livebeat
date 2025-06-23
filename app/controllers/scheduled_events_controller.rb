@@ -41,17 +41,57 @@ class ScheduledEventsController < ApplicationController
     @scheduled_event = ScheduledEvent.new(scheduled_event_params)
     @scheduled_event.venue = current_user.venue
 
-    if @scheduled_event.save
-      redirect_to @scheduled_event, notice: 'Event was successfully created.'
-    else
+    # Set coordinates directly if provided from autocomplete
+    if params[:scheduled_event][:latitude].present? && params[:scheduled_event][:longitude].present?
+      @scheduled_event.latitude = params[:scheduled_event][:latitude]
+      @scheduled_event.longitude = params[:scheduled_event][:longitude]
+    end
+
+    # Try to geocode the location
+    begin
+      if @scheduled_event.save
+        if @scheduled_event.latitude.present? && @scheduled_event.longitude.present?
+          redirect_to @scheduled_event, notice: 'Event was successfully created.'
+        else
+          redirect_to @scheduled_event, notice: 'Event was created, but location could not be geocoded. Please check the location name.'
+        end
+      else
+        render :new, status: :unprocessable_entity
+      end
+    rescue Geocoder::Error => e
+      @scheduled_event.errors.add(:location, "could not be geocoded. Please check the location name and try again.")
       render :new, status: :unprocessable_entity
     end
   end
 
   def update
-    if @scheduled_event.update(scheduled_event_params)
-      redirect_to @scheduled_event, notice: 'Event was successfully updated.'
-    else
+    # Remove selected photos if requested
+    if params[:remove_photo_ids].present?
+      params[:remove_photo_ids].each do |photo_id|
+        photo = @scheduled_event.photos.find_by_id(photo_id)
+        photo.purge if photo
+      end
+    end
+
+    # Set coordinates directly if provided from autocomplete
+    if params[:scheduled_event][:latitude].present? && params[:scheduled_event][:longitude].present?
+      @scheduled_event.latitude = params[:scheduled_event][:latitude]
+      @scheduled_event.longitude = params[:scheduled_event][:longitude]
+    end
+
+    # Try to update with geocoding
+    begin
+      if @scheduled_event.update(scheduled_event_params)
+        if @scheduled_event.latitude.present? && @scheduled_event.longitude.present?
+          redirect_to @scheduled_event, notice: 'Event was successfully updated.'
+        else
+          redirect_to @scheduled_event, notice: 'Event was updated, but location could not be geocoded. Please check the location name.'
+        end
+      else
+        render :edit, status: :unprocessable_entity
+      end
+    rescue Geocoder::Error => e
+      @scheduled_event.errors.add(:location, "could not be geocoded. Please check the location name and try again.")
       render :edit, status: :unprocessable_entity
     end
   end
@@ -80,7 +120,7 @@ class ScheduledEventsController < ApplicationController
   end
 
   def scheduled_event_params
-    params.require(:scheduled_event).permit(
+    permitted = [
       :title,
       :location,
       :category,
@@ -89,7 +129,16 @@ class ScheduledEventsController < ApplicationController
       :description,
       :price,
       :capacity,
-      photos: []
-    )
+      :latitude,
+      :longitude
+    ]
+
+    # Only permit photos if there are actual files uploaded (not empty array)
+    if params[:scheduled_event][:photos].present? &&
+       params[:scheduled_event][:photos].any? { |photo| photo.is_a?(ActionDispatch::Http::UploadedFile) }
+      permitted << { photos: [] }
+    end
+
+    params.require(:scheduled_event).permit(*permitted)
   end
 end
