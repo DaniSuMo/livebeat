@@ -10,6 +10,10 @@ class User < ApplicationRecord
   # Virtual attribute for venue name during registration
   attr_accessor :venue_name
 
+  # Geocoding
+  geocoded_by :address
+  after_validation :geocode, if: :will_save_change_to_address?
+
   # Validations
   validates :first_name, presence: true, length: { minimum: 2, maximum: 50 }
   validates :last_name, presence: true, length: { minimum: 2, maximum: 50 }
@@ -53,6 +57,19 @@ class User < ApplicationRecord
     return nil unless date_of_birth
     now = Time.current.to_date
     now.year - date_of_birth.year - (date_of_birth.to_date.change(year: now.year) > now ? 1 : 0)
+  end
+
+  # Location helper methods
+  def city
+    return nil unless latitude.present? && longitude.present?
+    result = Geocoder.search([latitude, longitude]).first
+    result&.city
+  end
+
+  def country
+    return nil unless latitude.present? && longitude.present?
+    result = Geocoder.search([latitude, longitude]).first
+    result&.country
   end
 
   private

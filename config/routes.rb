@@ -26,6 +26,12 @@ Rails.application.routes.draw do
   # get "manifest" => "rails/pwa#manifest", as: :pwa_manifest
   # get "service-worker" => "rails/pwa#service_worker", as: :pwa_service_worker
 
+  # API routes
+  namespace :api do
+    get 'nearby_places', to: 'nearby_places#index'
+    get 'location_search', to: 'location_search#index'
+  end
+
   # Defines the root path route ("/")
   # root "posts#index"
   root "pages#welcome"

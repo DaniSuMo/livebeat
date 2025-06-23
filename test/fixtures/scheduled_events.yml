@@ -3,7 +3,7 @@
 one:
   title: MyString
   location: MyString
-  category: MyString
+  category: Live Music & Concerts
   starting_time: 2025-06-17 12:55:58
   ending_time: 2025-06-17 12:55:58
   description: MyText
@@ -14,7 +14,7 @@ one:
 two:
   title: MyString
   location: MyString
-  category: MyString
+  category: Art & Culture
   starting_time: 2025-06-17 12:55:58
   ending_time: 2025-06-17 12:55:58
   description: MyText

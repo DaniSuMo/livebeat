@@ -18,14 +18,35 @@
       <%= form.text_field :title, class: "mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" %>
     </div>
 
-    <div>
+    <div data-controller="location-autocomplete"
+         data-location-autocomplete-user-latitude-value="<%= current_user&.latitude %>"
+         data-location-autocomplete-user-longitude-value="<%= current_user&.longitude %>">
       <%= form.label :location, class: "block text-sm font-medium text-gray-700" %>
-      <%= form.text_field :location, class: "mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" %>
+      <div class="mt-1 relative">
+        <%= form.text_field :location,
+            data: {
+              location_autocomplete_target: "input",
+              action: "input->location-autocomplete#onInput keydown->location-autocomplete#onKeydown"
+            },
+            class: "block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" %>
+      </div>
+      <div data-location-autocomplete-target="suggestions" class="hidden mt-2 relative"></div>
+
+      <!-- Hidden fields for coordinates -->
+      <%= form.hidden_field :latitude, data: { location_autocomplete_target: "latitude" } %>
+      <%= form.hidden_field :longitude, data: { location_autocomplete_target: "longitude" } %>
+
+      <p class="mt-1 text-sm text-gray-500">
+        💡 Tip: Start typing to see location suggestions.
+      </p>
     </div>
 
     <div>
       <%= form.label :category, class: "block text-sm font-medium text-gray-700" %>
-      <%= form.text_field :category, class: "mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" %>
+      <%= form.select :category,
+          event_categories,
+          { prompt: "Select a category" },
+          { class: "mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" } %>
     </div>
 
     <div>
@@ -61,6 +82,22 @@
 
   <div data-controller="file-upload">
     <%= form.label :photos, "Event Photos", class: "block text-sm font-medium text-gray-700" %>
+
+    <% if scheduled_event.persisted? && scheduled_event.photos.attached? %>
+      <div class="flex flex-wrap gap-4 mb-2">
+        <% scheduled_event.photos.each do |photo| %>
+          <% if photo.respond_to?(:id) && photo.persisted? %>
+            <div class="relative group">
+              <%= image_tag url_for(photo), class: "h-24 w-24 object-cover rounded shadow" %>
+              <label class="absolute top-1 right-1 bg-white bg-opacity-80 rounded p-1 cursor-pointer group-hover:bg-red-100">
+                <%= check_box_tag "remove_photo_ids[]", photo.id, false %> Remove
+              </label>
+            </div>
+          <% end %>
+        <% end %>
+      </div>
+    <% end %>
+
     <div class="mt-1">
       <%= form.file_field :photos,
           multiple: true,

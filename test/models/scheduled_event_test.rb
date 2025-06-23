@@ -6,7 +6,7 @@ class ScheduledEventTest < ActiveSupport::TestCase
     @event = ScheduledEvent.new(
       title: "Test Event",
       location: "Test Location",
-      category: "Test Category",
+      category: "Live Music & Concerts",
       starting_time: 1.day.from_now,
       ending_time: 2.days.from_now,
       price: 25.0,
@@ -38,6 +38,12 @@ class ScheduledEventTest < ActiveSupport::TestCase
       content_type: "image/jpeg"
     )
 
+    assert_not @event.valid?
+    assert_includes @event.errors[:photos], "must have between 2 and 6 photos"
+  end
+
+  test "should require photos to be attached" do
+    # Don't attach any photos
     assert_not @event.valid?
     assert_includes @event.errors[:photos], "must have between 2 and 6 photos"
   end
@@ -103,5 +109,27 @@ class ScheduledEventTest < ActiveSupport::TestCase
 
     assert_not @event.valid?
     assert_includes @event.errors[:photos], "must be less than 5MB each"
+  end
+
+  test "should only accept predefined categories" do
+    @event.photos.attach(
+      io: File.open(Rails.root.join("test", "fixtures", "files", "test_image1.jpg")),
+      filename: "test_image1.jpg",
+      content_type: "image/jpeg"
+    )
+    @event.photos.attach(
+      io: File.open(Rails.root.join("test", "fixtures", "files", "test_image2.png")),
+      filename: "test_image2.png",
+      content_type: "image/png"
+    )
+
+    # Test with valid category
+    @event.category = "Art & Culture"
+    assert @event.valid?
+
+    # Test with invalid category
+    @event.category = "Invalid Category"
+    assert_not @event.valid?
+    assert_includes @event.errors[:category], "must be one of the predefined categories"
   end
 end
