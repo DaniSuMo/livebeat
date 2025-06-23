@@ -135,7 +135,6 @@ GEM
       multipart-post (~> 2.0)
     faraday-net_http (3.4.1)
       net-http (>= 0.5.0)
-    foreman (0.88.1)
     fugit (1.11.1)
       et-orbi (~> 1, >= 1.2.11)
       raabro (~> 1.4)
@@ -330,7 +329,7 @@ GEM
       rexml (~> 3.2, >= 3.2.5)
       rubyzip (>= 1.2.2, < 3.0)
       websocket (~> 1.0)
-    solid_cable (3.0.8)
+    solid_cable (3.0.10)
       actioncable (>= 7.2)
       activejob (>= 7.2)
       activerecord (>= 7.2)
@@ -409,7 +408,6 @@ DEPENDENCIES
   cssbundling-rails
   debug
   devise
-  foreman
   geocoder
   importmap-rails
   jbuilder
