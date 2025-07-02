@@ -150,6 +150,7 @@ export default class extends Controller {
       // Ensure the close button has the gradient styling
       const closeButton = popupEl.querySelector('.mapboxgl-popup-close-button');
       if (closeButton) {
+        closeButton.textContent = '✕';
         closeButton.style.position = 'absolute';
         closeButton.style.top = '8px';
         closeButton.style.right = '8px';
@@ -242,6 +243,7 @@ export default class extends Controller {
       // Ensure the close button has the gradient styling
       const closeButton = popupEl.querySelector('.mapboxgl-popup-close-button');
       if (closeButton) {
+        closeButton.textContent = '✕';
         closeButton.style.position = 'absolute';
         closeButton.style.top = '8px';
         closeButton.style.right = '8px';
@@ -301,7 +303,7 @@ export default class extends Controller {
 
               ${event.photos.length > 1 ? `
                 <!-- Photo counter indicator -->
-                <div style="position: absolute; top: 4px; right: 4px; background: rgba(0,0,0,0.6); color: white; font-size: 10px; padding: 2px 6px; border-radius: 8px; font-weight: 500; z-index: 1000;">
+                <div style="position: absolute; top: 4px; left: 4px; background: rgba(0,0,0,0.6); color: white; font-size: 10px; padding: 2px 6px; border-radius: 8px; font-weight: 500; z-index: 1000;">
                   <span class="current-photo">1</span> / <span class="total-photos">${event.photos.length}</span>
                 </div>
 
