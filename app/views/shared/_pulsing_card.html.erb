@@ -1,0 +1,15 @@
+<div class="pulsing-card bg-white rounded-3xl shadow-2xl p-6 flex flex-col items-center justify-center space-y-4" style="width: 20rem; height: 20rem;">
+  <div class="w-64 h-32 flex items-center justify-center">
+    <%= image_tag "/livebeat-logo.png" %>
+  </div>
+  <p class="text-lg text-gray-600 text-center font-bold">Your hub for live events</p>
+  <% if user_signed_in? %>
+    <%= link_to scheduled_events_path, class: "inline-block px-8 py-3 mt-4 bg-gradient-to-r from-purple-600 to-blue-500 text-white rounded-xl hover:from-purple-700 hover:to-blue-600 transition-all duration-300 font-semibold shadow-lg" do %>
+      See events
+    <% end %>
+  <% else %>
+    <%= link_to new_user_session_path, class: "inline-block px-8 py-3 mt-4 bg-gradient-to-r from-purple-600 to-blue-500 text-white rounded-xl hover:from-purple-700 hover:to-blue-600 transition-all duration-300 font-semibold shadow-lg" do %>
+      Login
+    <% end %>
+  <% end %>
+</div>

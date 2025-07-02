@@ -6,7 +6,23 @@ module.exports = {
     './app/javascript/**/*.js'
   ],
   theme: {
-    extend: {},
+    extend: {
+      animation: {
+        'pulse-button': 'pulseButton 2s infinite',
+      },
+      keyframes: {
+        pulseButton: {
+          '0%, 100%': {
+            transform: 'scale(1)',
+            boxShadow: '0 0 0 0 rgba(139, 92, 246, 0.7)',
+          },
+          '50%': {
+            transform: 'scale(1.05)',
+            boxShadow: '0 0 0 10px rgba(139, 92, 246, 0)',
+          },
+        },
+      },
+    },
   },
   plugins: [],
 }

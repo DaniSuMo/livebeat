@@ -1,0 +1,10 @@
+.pulsing-card {
+  animation: pulseButton 2s infinite;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.pulsing-card:hover {
+  transform: scale(1.02);
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+}
