@@ -1,6 +1,22 @@
 import { Controller } from "@hotwired/stimulus"
 import mapboxgl from "mapbox-gl"
 
+// FontAwesome SVGs for each category (free icons)
+const CATEGORY_ICONS = {
+  "Art & Culture": '<i class="fa-solid fa-masks-theater"></i>',
+  "Live Music & Concerts": '<i class="fa-solid fa-compact-disc"></i>',
+  "Nightlife & Parties": '<i class="fa-solid fa-martini-glass"></i>',
+  "Education & Workshops": '<i class="fa-solid fa-chalkboard"></i>',
+  "Sports & Wellness": '<i class="fa-solid fa-person-running"></i>',
+  "Family & Kids": '<i class="fa-solid fa-people-roof"></i>',
+  "Food & Drinks": '<i class="fa-solid fa-utensils"></i>',
+  "Business & Networking": '<i class="fa-solid fa-user-tie"></i>',
+  "Technology & Gaming": '<i class="fa-solid fa-microchip"></i>',
+  "Fashion & Shopping": '<i class="fa-solid fa-vest-patches"></i>',
+  "Sustainability & Environment": '<i class="fa-solid fa-recycle"></i>',
+  "Personal Growth & Spirituality": '<i class="fa-solid fa-hands-praying"></i>',
+};
+
 export default class extends Controller {
   static values = {
     token: String,
@@ -9,12 +25,10 @@ export default class extends Controller {
 
   connect() {
     if (!this.tokenValue) {
-      console.error("Mapbox token not provided")
       this.element.innerHTML = '<div class="flex items-center justify-center h-full bg-gray-100 text-gray-500">Mapbox API key not configured</div>'
       return
     }
 
-    this.adjustMapHeight();
     mapboxgl.accessToken = this.tokenValue
 
     // Always start fresh when connecting (for page navigation scenarios)
@@ -30,7 +44,6 @@ export default class extends Controller {
   addEventListeners() {
     // Add resize listener
     this.resizeHandler = () => {
-      this.adjustMapHeight();
       this.resize();
     };
     window.addEventListener('resize', this.resizeHandler);
@@ -64,10 +77,8 @@ export default class extends Controller {
       })
 
       this.map.on('error', (e) => {
-        console.error('Map error:', e);
       })
     } catch (error) {
-      console.error('Error creating map:', error);
       this.element.innerHTML = '<div class="flex items-center justify-center h-full bg-red-100 text-red-600">Error loading map. Please refresh the page.</div>';
     }
   }
@@ -114,16 +125,42 @@ export default class extends Controller {
   }
 
   createEventMarker(event) {
-    // Create a custom marker element
+    // Create a custom pin marker element for single events
     const markerEl = document.createElement('div');
     markerEl.className = 'event-marker';
+    markerEl.style.position = 'relative';
+    markerEl.style.width = '32px';
+    markerEl.style.height = '40px';
+
+    // Pin SVG (background)
     markerEl.innerHTML = `
-      <svg width="32" height="40" viewBox="0 0 32 40" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <path d="M16 0C10.477 0 6 4.477 6 10c0 7 10 30 10 30s10-23 10-30c0-5.523-4.477-10-10-10z" fill="#8b5cf6" stroke="white" stroke-width="2"/>
-        <circle cx="16" cy="12" r="6" fill="white"/>
-        <text x="16" y="16" text-anchor="middle" font-size="12" font-weight="bold" fill="#8b5cf6">${event.category ? event.category.charAt(0).toUpperCase() : 'E'}</text>
+      <svg width="32" height="40" viewBox="0 0 32 40" xmlns="http://www.w3.org/2000/svg" style="display:block;">
+        <defs>
+          <linearGradient id="pinGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%" style="stop-color:#8b5cf6;stop-opacity:1" />
+            <stop offset="100%" style="stop-color:#3b82f6;stop-opacity:1" />
+          </linearGradient>
+        </defs>
+        <path d="M16 0C7.163 0 0 7.163 0 16c0 11.25 16 24 16 24s16-12.75 16-24C32 7.163 24.837 0 16 0z" fill="url(#pinGradient)"/>
       </svg>
     `;
+
+    // Icon HTML (FontAwesome <i> tag overlay)
+    const iconHTML = CATEGORY_ICONS[event.category] || '';
+    if (iconHTML) {
+      const iconDiv = document.createElement('div');
+      iconDiv.style.position = 'absolute';
+      iconDiv.style.left = '50%';
+      iconDiv.style.top = '42%';
+      iconDiv.style.transform = 'translate(-50%, -50%)';
+      iconDiv.style.fontSize = '16px'; // Adjust as needed
+      iconDiv.style.color = 'white';
+      iconDiv.style.display = 'flex';
+      iconDiv.style.alignItems = 'center';
+      iconDiv.style.justifyContent = 'center';
+      iconDiv.innerHTML = iconHTML;
+      markerEl.appendChild(iconDiv);
+    }
 
     // Create popup content for single event
     const popupContent = this.createEventPopupContent(event);
@@ -133,24 +170,27 @@ export default class extends Controller {
       offset: 25,
       closeButton: true,
       closeOnClick: false,
-      className: 'custom-popup',
-      maxWidth: '320px'
+      className: 'custom-popup cluster-popup',
+      maxWidth: '400px'
     }).setHTML(popupContent);
 
-    // Add marker to map
-    const marker = new mapboxgl.Marker(markerEl)
+    // Add marker to map - EXACTLY like cluster marker
+    const marker = new mapboxgl.Marker({
+      element: markerEl,
+      anchor: 'bottom'
+    })
       .setLngLat([event.longitude, event.latitude])
       .setPopup(popup)
       .addTo(this.map);
 
-    // Add carousel functionality after popup is added
+    // Add carousel functionality for each event in cluster - EXACTLY like cluster marker
     popup.on('open', () => {
       const popupEl = popup.getElement();
 
       // Ensure the close button has the gradient styling
       const closeButton = popupEl.querySelector('.mapboxgl-popup-close-button');
       if (closeButton) {
-        closeButton.textContent = '✕';
+        closeButton.textContent = '×';
         closeButton.style.position = 'absolute';
         closeButton.style.top = '8px';
         closeButton.style.right = '8px';
@@ -167,6 +207,9 @@ export default class extends Controller {
         closeButton.style.alignItems = 'center';
         closeButton.style.justifyContent = 'center';
         closeButton.style.cursor = 'pointer';
+        closeButton.style.fontSize = '18px';
+        closeButton.style.fontWeight = 'bold';
+        closeButton.style.lineHeight = '1';
 
         // Ensure the popup content has relative positioning
         const popupContent = popupEl.querySelector('.mapboxgl-popup-content');
@@ -188,7 +231,10 @@ export default class extends Controller {
         });
       }
 
-      this.setupCarousel(popupEl, event.photos);
+      // Setup carousel for single event photos
+      if (event.photos && event.photos.length > 1) {
+        this.setupCarousel(popupEl, event.photos);
+      }
       this.ensurePopupVisible(popup);
     });
   }
@@ -212,7 +258,6 @@ export default class extends Controller {
         font-size: 14px;
         box-shadow: 0 2px 8px rgba(0,0,0,0.3);
         cursor: pointer;
-        transition: all 0.2s ease;
       " onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'">
         ${events.length}
       </div>
@@ -231,7 +276,10 @@ export default class extends Controller {
     }).setHTML(popupContent);
 
     // Add marker to map
-    const marker = new mapboxgl.Marker(markerEl)
+    const marker = new mapboxgl.Marker({
+      element: markerEl,
+      anchor: 'bottom'
+    })
       .setLngLat([longitude, latitude])
       .setPopup(popup)
       .addTo(this.map);
@@ -243,7 +291,7 @@ export default class extends Controller {
       // Ensure the close button has the gradient styling
       const closeButton = popupEl.querySelector('.mapboxgl-popup-close-button');
       if (closeButton) {
-        closeButton.textContent = '✕';
+        closeButton.textContent = '×';
         closeButton.style.position = 'absolute';
         closeButton.style.top = '8px';
         closeButton.style.right = '8px';
@@ -260,6 +308,9 @@ export default class extends Controller {
         closeButton.style.alignItems = 'center';
         closeButton.style.justifyContent = 'center';
         closeButton.style.cursor = 'pointer';
+        closeButton.style.fontSize = '18px';
+        closeButton.style.fontWeight = 'bold';
+        closeButton.style.lineHeight = '1';
 
         // Ensure the popup content has relative positioning
         const popupContent = popupEl.querySelector('.mapboxgl-popup-content');
@@ -486,9 +537,6 @@ export default class extends Controller {
       if (currentPhotoSpan) {
         currentPhotoSpan.textContent = index + 1;
       }
-
-      // Reset auto-advance timer
-      this.resetAutoAdvance();
     };
 
     // Add hover effects for navigation buttons
@@ -600,9 +648,6 @@ export default class extends Controller {
 
     // Clean up function
     const cleanup = () => {
-      if (autoAdvanceInterval) {
-        clearInterval(autoAdvanceInterval);
-      }
       popupElement.removeEventListener('keydown', handleKeyPress);
     };
 
@@ -662,20 +707,6 @@ export default class extends Controller {
         this.map.panBy([panX, panY], { duration: 300, easing: (t) => t * (2 - t) });
       }
     }, 100);
-  }
-
-  adjustMapHeight() {
-    const bottomNavbar = document.querySelector('nav.fixed.bottom-0');
-    const navbarHeight = bottomNavbar ? bottomNavbar.offsetHeight : 0;
-
-    // The map's direct parent is the div we need to style.
-    const mapContainer = this.element.parentElement;
-
-    if (mapContainer) {
-      const mapTopOffset = mapContainer.getBoundingClientRect().top;
-      const availableHeight = window.innerHeight - mapTopOffset - navbarHeight;
-      mapContainer.style.height = `${availableHeight}px`;
-    }
   }
 
   formatEventDate(startTime, endTime) {
