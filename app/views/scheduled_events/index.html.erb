@@ -19,7 +19,7 @@
 
   <!-- Map View -->
   <div id="map-view" data-view-toggle-target="mapView">
-    <div class="w-full">
+    <div class="w-full" style="height: calc(100vh - 64px - 64px);">
       <% if @mapbox_token.present? %>
         <div
           data-controller="map"

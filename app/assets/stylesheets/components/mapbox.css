@@ -1,17 +1,23 @@
 /* Custom styles for Mapbox map */
 .event-marker {
   cursor: pointer;
-  transition: transform 0.2s ease-in-out;
-  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
-  transform-origin: bottom center;
+  position: absolute;
+  pointer-events: auto;
 }
 
 .event-marker:hover {
   transform: scale(1.1);
 }
 
-.event-marker .relative {
-  display: block;
+/* Cluster marker styles */
+.cluster-marker {
+  cursor: pointer;
+  position: absolute;
+  pointer-events: auto;
+}
+
+.cluster-marker:hover {
+  transform: scale(1.1);
 }
 
 /* Ensure popup tip is always visible */
