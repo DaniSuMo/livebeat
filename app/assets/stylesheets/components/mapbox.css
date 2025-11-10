@@ -1,7 +1,7 @@
 /* Custom styles for Mapbox map */
 .event-marker {
   cursor: pointer;
-  position: absolute;
+  /* position: absolute; */
   pointer-events: auto;
 }
 
@@ -12,7 +12,7 @@
 /* Cluster marker styles */
 .cluster-marker {
   cursor: pointer;
-  position: absolute;
+  /* position: absolute; */
   pointer-events: auto;
 }
 

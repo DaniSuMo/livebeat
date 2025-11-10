@@ -1,74 +1,99 @@
-<div class="container mx-auto px-4 py-8">
-  <div class="max-w-3xl mx-auto">
-    <div class="bg-white rounded-lg shadow-md overflow-hidden">
-      <div class="p-6">
-        <div class="flex justify-between items-start mb-6">
-          <h1 class="text-3xl font-bold"><%= @scheduled_event.title %></h1>
-          <div class="flex space-x-4">
-            <%= link_to 'Edit', edit_scheduled_event_path(@scheduled_event), class: "text-green-500 hover:text-green-700" %>
-            <%= button_to 'Delete', @scheduled_event, method: :delete, class: "text-red-500 hover:text-red-700", form: { data: { turbo_confirm: 'Are you sure?' } } %>
-          </div>
-        </div>
+<div class="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-600 to-blue-500 text-white py-8">
+  <div class="bg-white/10 backdrop-blur-sm rounded-2xl p-8 shadow-2xl max-w-[600px] w-[600px] mx-4">
+    <div class="space-y-6">
+      <header class="text-center space-y-2">
+        <h1 class="text-3xl font-bold text-white"><%= @scheduled_event.title %> 🎵</h1>
+        <p class="text-white/80">Event Details</p>
+      </header>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-          <div>
-            <h2 class="text-lg font-semibold mb-2">Event Details</h2>
-            <p class="text-gray-600 mb-2"><strong>Location:</strong> <%= @scheduled_event.location %></p>
-            <% if @scheduled_event.latitude.present? && @scheduled_event.longitude.present? %>
-              <p class="text-gray-600 mb-2">
-                <strong>Coordinates:</strong>
-                <span class="text-green-600">✓ Located</span>
-                <span class="text-xs text-gray-500">(<%= @scheduled_event.latitude.round(6) %>, <%= @scheduled_event.longitude.round(6) %>)</span>
-              </p>
-            <% else %>
-              <p class="text-gray-600 mb-2">
-                <strong>Coordinates:</strong>
-                <span class="text-yellow-600">⚠ Location not found</span>
-              </p>
-            <% end %>
-            <p class="text-gray-600 mb-2"><strong>Category:</strong> <%= @scheduled_event.category %></p>
-            <p class="text-gray-600 mb-2"><strong>Venue:</strong> <%= @scheduled_event.venue.name %></p>
-            <p class="text-gray-600 mb-2"><strong>Capacity:</strong> <%= @scheduled_event.capacity %></p>
-          </div>
-
-          <div>
-            <h2 class="text-lg font-semibold mb-2">Schedule</h2>
-            <p class="text-gray-600 mb-2">
-              <strong>Start:</strong> <%= @scheduled_event.starting_time.strftime("%B %d, %Y at %I:%M %p") %>
-            </p>
-            <p class="text-gray-600 mb-2">
-              <strong>End:</strong> <%= @scheduled_event.ending_time.strftime("%B %d, %Y at %I:%M %p") %>
-            </p>
-            <p class="text-gray-600 mb-2"><strong>Price:</strong> $<%= @scheduled_event.price %></p>
-          </div>
-        </div>
-
-        <div>
-          <h2 class="text-lg font-semibold mb-2">Description</h2>
-          <p class="text-gray-600"><%= @scheduled_event.description %></p>
-        </div>
-
-        <% if @scheduled_event.photos.attached? %>
-          <div class="mt-6">
-            <h2 class="text-lg font-semibold mb-4">Event Photos</h2>
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              <% @scheduled_event.photos.each do |photo| %>
-                <div class="relative group">
-                  <%= cl_image_tag photo.key,
-                      height: 300,
-                      width: 400,
-                      crop: :fill,
-                      class: "w-full h-48 object-cover rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300" %>
-                </div>
-              <% end %>
-            </div>
-          </div>
+      <div class="flex justify-end space-x-4 mb-4">
+        <% if current_user&.venue? && @scheduled_event.venue == current_user.venue %>
+          <%= link_to 'Edit', edit_scheduled_event_path(@scheduled_event), class: "px-4 py-2 bg-white/20 text-white rounded-xl hover:bg-white/30 transition font-medium" %>
+          <%= button_to 'Delete', @scheduled_event, method: :delete, class: "px-4 py-2 bg-red-500/80 text-white rounded-xl hover:bg-red-500 transition font-medium", form: { data: { turbo_confirm: 'Are you sure?' } } %>
         <% end %>
       </div>
-    </div>
 
-    <div class="mt-6">
-      <%= link_to 'Back to Events', scheduled_events_path, class: "text-blue-500 hover:text-blue-700" %>
+      <div class="space-y-6">
+        <div class="bg-white/10 rounded-xl p-6 backdrop-blur-sm">
+          <h2 class="text-xl font-semibold mb-4 text-white">Event Details</h2>
+          <div class="space-y-3">
+            <p class="text-white/90">
+              <span class="font-medium">Location:</span>
+              <span class="text-white"><%= @scheduled_event.location %></span>
+            </p>
+            <% if @scheduled_event.latitude.present? && @scheduled_event.longitude.present? %>
+              <p class="text-white/90">
+                <span class="font-medium">Coordinates:</span>
+                <span class="text-green-300">✓ Located</span>
+                <span class="text-xs text-white/60">(<%= @scheduled_event.latitude.round(6) %>, <%= @scheduled_event.longitude.round(6) %>)</span>
+              </p>
+            <% else %>
+              <p class="text-white/90">
+                <span class="font-medium">Coordinates:</span>
+                <span class="text-yellow-300">⚠ Location not found</span>
+              </p>
+            <% end %>
+            <p class="text-white/90">
+              <span class="font-medium">Category:</span>
+              <span class="text-white"><%= @scheduled_event.category %></span>
+            </p>
+            <p class="text-white/90">
+              <span class="font-medium">Venue:</span>
+              <span class="text-white"><%= @scheduled_event.venue.name %></span>
+            </p>
+            <p class="text-white/90">
+              <span class="font-medium">Capacity:</span>
+              <span class="text-white"><%= @scheduled_event.capacity %></span>
+            </p>
+          </div>
+        </div>
+
+        <div class="bg-white/10 rounded-xl p-6 backdrop-blur-sm">
+          <h2 class="text-xl font-semibold mb-4 text-white">Schedule</h2>
+          <div class="space-y-3">
+            <p class="text-white/90">
+              <span class="font-medium">Start:</span>
+              <span class="text-white"><%= @scheduled_event.starting_time.strftime("%B %d, %Y at %I:%M %p") %></span>
+            </p>
+            <p class="text-white/90">
+              <span class="font-medium">End:</span>
+              <span class="text-white"><%= @scheduled_event.ending_time.strftime("%B %d, %Y at %I:%M %p") %></span>
+            </p>
+            <p class="text-white/90">
+              <span class="font-medium">Price:</span>
+              <span class="text-white">$<%= @scheduled_event.price %></span>
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <% if @scheduled_event.description.present? %>
+        <div class="bg-white/10 rounded-xl p-6 backdrop-blur-sm">
+          <h2 class="text-xl font-semibold mb-4 text-white">Description</h2>
+          <p class="text-white/90"><%= @scheduled_event.description %></p>
+        </div>
+      <% end %>
+
+      <% if @scheduled_event.photos.attached? %>
+        <div class="bg-white/10 rounded-xl p-6 backdrop-blur-sm">
+          <h2 class="text-xl font-semibold mb-4 text-white">Event Photos</h2>
+          <div class="grid grid-cols-2 gap-4">
+            <% @scheduled_event.photos.each do |photo| %>
+              <div class="relative group">
+                <%= cl_image_tag photo.key,
+                    height: 300,
+                    width: 400,
+                    crop: :fill,
+                    class: "w-full h-48 object-cover rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300" %>
+              </div>
+            <% end %>
+          </div>
+        </div>
+      <% end %>
+
+      <footer class="pt-4 border-t border-white/20 text-center">
+        <%= link_to 'Back to Events', scheduled_events_path, class: "text-white/80 hover:text-white transition" %>
+      </footer>
     </div>
   </div>
 </div>

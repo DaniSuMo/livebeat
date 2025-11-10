@@ -5,7 +5,8 @@ class ScheduledEventsController < ApplicationController
   before_action :ensure_event_owner!, only: [:edit, :update, :destroy]
 
   def index
-    @scheduled_events = ScheduledEvent.all
+    @time_period = params[:time_period].presence || '24h'
+    @scheduled_events = filter_events_by_time_period(@time_period)
     @mapbox_token = ENV['MAPBOX_API_KEY']
 
     # Prepare events data for the map
@@ -102,6 +103,25 @@ class ScheduledEventsController < ApplicationController
   end
 
   private
+
+  def filter_events_by_time_period(time_period)
+    base_scope = ScheduledEvent.all
+    now = Time.current
+
+    case time_period
+    when '24h'
+      base_scope.where('starting_time >= ? AND starting_time <= ?', now, now + 24.hours)
+    when '48h'
+      base_scope.where('starting_time >= ? AND starting_time <= ?', now, now + 48.hours)
+    when 'week'
+      base_scope.where('starting_time >= ? AND starting_time <= ?', now, now + 1.week)
+    when 'month'
+      base_scope.where('starting_time >= ? AND starting_time <= ?', now, now + 1.month)
+    else
+      # 'all' - show all events
+      base_scope
+    end
+  end
 
   def set_scheduled_event
     @scheduled_event = ScheduledEvent.find(params[:id])

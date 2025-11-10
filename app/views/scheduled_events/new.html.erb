@@ -1,6 +1,11 @@
-<div class="container mx-auto px-4 py-8">
-  <div class="max-w-3xl mx-auto">
-    <h1 class="text-3xl font-bold mb-6">New Event</h1>
-    <%= render 'form', scheduled_event: @scheduled_event %>
+<div class="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-600 to-blue-500 text-white py-8">
+  <div class="bg-white/10 backdrop-blur-sm rounded-2xl p-8 shadow-2xl max-w-3xl w-full mx-4">
+    <div class="space-y-6">
+      <header class="text-center space-y-2">
+        <h1 class="text-3xl font-bold text-white">New Event 🎵</h1>
+        <p class="text-white/80">Create a new scheduled event</p>
+      </header>
+      <%= render 'form', scheduled_event: @scheduled_event %>
+    </div>
   </div>
 </div>

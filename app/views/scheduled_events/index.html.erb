@@ -1,4 +1,4 @@
-<div class="container mx-auto px-4 py-8" data-controller="page-refresh view-toggle">
+<div class="container mx-auto px-4 py-8" data-controller="page-refresh view-toggle time-period">
   <div id="page-header" class="flex justify-between items-center mb-2">
     <%= image_tag "livebeat-logo.png", alt: "LiveBeat", class: "h-16" %>
     <div class="flex items-center space-x-4">
@@ -11,8 +11,46 @@
           Map View
         </button>
       </div>
+      <!-- Time Period Selector -->
+      <div class="flex bg-gray-200 rounded-lg p-1" data-time-period-target="container">
+        <button
+          data-time-period-target="button"
+          data-period="24h"
+          data-action="click->time-period#selectPeriod"
+          class="px-3 py-1 rounded-md text-sm font-medium transition-all <%= 'bg-white shadow-sm text-gray-900' if @time_period == '24h' %> <%= 'text-gray-600 hover:text-gray-900' if @time_period != '24h' %>">
+          24h
+        </button>
+        <button
+          data-time-period-target="button"
+          data-period="48h"
+          data-action="click->time-period#selectPeriod"
+          class="px-3 py-1 rounded-md text-sm font-medium transition-all <%= 'bg-white shadow-sm text-gray-900' if @time_period == '48h' %> <%= 'text-gray-600 hover:text-gray-900' if @time_period != '48h' %>">
+          48h
+        </button>
+        <button
+          data-time-period-target="button"
+          data-period="week"
+          data-action="click->time-period#selectPeriod"
+          class="px-3 py-1 rounded-md text-sm font-medium transition-all <%= 'bg-white shadow-sm text-gray-900' if @time_period == 'week' %> <%= 'text-gray-600 hover:text-gray-900' if @time_period != 'week' %>">
+          Week
+        </button>
+        <button
+          data-time-period-target="button"
+          data-period="month"
+          data-action="click->time-period#selectPeriod"
+          class="px-3 py-1 rounded-md text-sm font-medium transition-all <%= 'bg-white shadow-sm text-gray-900' if @time_period == 'month' %> <%= 'text-gray-600 hover:text-gray-900' if @time_period != 'month' %>">
+          Month
+        </button>
+        <button
+          data-time-period-target="button"
+          data-period="all"
+          data-action="click->time-period#selectPeriod"
+          class="px-3 py-1 rounded-md text-sm font-medium transition-all <%= 'bg-white shadow-sm text-gray-900' if @time_period == 'all' %> <%= 'text-gray-600 hover:text-gray-900' if @time_period != 'all' %>">
+          All
+        </button>
+      </div>
       <% if current_user&.venue? %>
-        <%= link_to 'New Event', new_scheduled_event_path, class: "inline-block px-8 py-3 bg-gradient-to-r from-purple-600 to-blue-500 text-white rounded-xl hover:from-purple-700 hover:to-blue-600 transition-all duration-300 font-semibold shadow-lg" %>
+        <%= link_to 'New Event', new_scheduled_event_path, class: "px-3 py-1 rounded-md text-sm font-medium bg-gradient-to-r from-purple-600 to-blue-500 text-white hover:from-purple-700 hover:to-blue-600 transition-all duration-300" %>
       <% end %>
     </div>
   </div>
