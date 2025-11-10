@@ -33,6 +33,10 @@ export default class extends Controller {
 
     // Always start fresh when connecting (for page navigation scenarios)
     this.map = null;
+    this.userLocationMarker = null;
+    this.userLocation = null; // Store user location coordinates
+    this.markerMoveListener = null;
+    this.markerZoomListener = null;
 
     // Add event listeners first
     this.addEventListeners();
@@ -63,17 +67,29 @@ export default class extends Controller {
       this.map = new mapboxgl.Map({
         container: this.element,
         style: 'mapbox://styles/mapbox/streets-v12',
-        center: [-74.006, 40.7128], // Default to NYC, will be adjusted based on events
-        zoom: 10
+        center: [4.4792, 51.9225], // Default to Rotterdam, will be centered on user location
+        zoom: 12
       })
 
       // Add navigation controls
       this.map.addControl(new mapboxgl.NavigationControl())
 
+      // Add geolocate control
+      this.map.addControl(
+        new mapboxgl.GeolocateControl({
+          positionOptions: {
+            enableHighAccuracy: true
+          },
+          trackUserLocation: true,
+          showUserHeading: true,
+          showUserLocation: false // We'll handle this ourselves
+        })
+      )
+
       // Wait for map to load before adding markers
       this.map.on('load', () => {
         this.addEventMarkers()
-        this.fitMapToEvents()
+        this.getUserLocation()
       })
 
       this.map.on('error', (e) => {
@@ -83,46 +99,200 @@ export default class extends Controller {
     }
   }
 
+  getUserLocation() {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const { latitude, longitude } = position.coords;
+          // Store user location coordinates
+          this.userLocation = { latitude, longitude };
+          this.addUserLocationMarker(latitude, longitude);
+          // Center map on user location
+          this.map.setCenter([longitude, latitude]);
+        },
+        (error) => {
+          console.log('Geolocation error:', error);
+          // Don't show error to user, just silently fail
+        },
+        {
+          enableHighAccuracy: true,
+          timeout: 10000,
+          maximumAge: 60000
+        }
+      );
+    }
+  }
+
+  addUserLocationMarker(latitude, longitude) {
+    // Remove existing user location marker if it exists
+    if (this.userLocationMarker) {
+      this.userLocationMarker.remove();
+    }
+
+    // Clean up old event listeners
+    if (this.markerMoveListener && this.map) {
+      this.map.off('move', this.markerMoveListener);
+    }
+    if (this.markerZoomListener && this.map) {
+      this.map.off('zoom', this.markerZoomListener);
+    }
+
+    // Ensure we use the stored coordinates if available, otherwise use provided ones
+    const coords = this.userLocation || { latitude, longitude };
+    const finalLat = coords.latitude;
+    const finalLng = coords.longitude;
+
+    // Create a custom user location marker element
+    const markerEl = document.createElement('div');
+    markerEl.className = 'user-location-marker';
+    markerEl.style.position = 'relative';
+    markerEl.style.width = '32px';
+    markerEl.style.height = '40px';
+
+    // Pin SVG with different gradient for user location
+    markerEl.innerHTML = `
+      <svg width="32" height="40" viewBox="0 0 32 40" xmlns="http://www.w3.org/2000/svg" style="display:block;">
+        <defs>
+          <linearGradient id="userPinGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%" style="stop-color:#10b981;stop-opacity:1" />
+            <stop offset="100%" style="stop-color:#059669;stop-opacity:1" />
+          </linearGradient>
+        </defs>
+        <path d="M16 0C7.163 0 0 7.163 0 16c0 11.25 16 24 16 24s16-12.75 16-24C32 7.163 24.837 0 16 0z" fill="url(#userPinGradient)"/>
+      </svg>
+    `;
+
+    // User icon overlay
+    const iconDiv = document.createElement('div');
+    iconDiv.style.position = 'absolute';
+    iconDiv.style.left = '50%';
+    iconDiv.style.top = '42%';
+    iconDiv.style.transform = 'translate(-50%, -50%)';
+    iconDiv.style.fontSize = '16px';
+    iconDiv.style.color = 'white';
+    iconDiv.style.display = 'flex';
+    iconDiv.style.alignItems = 'center';
+    iconDiv.style.justifyContent = 'center';
+    iconDiv.innerHTML = '<i class="fa-solid fa-user"></i>';
+    markerEl.appendChild(iconDiv);
+
+    // Create popup for user location
+    const popupContent = `
+      <div class="p-3 max-w-xs">
+        <div class="flex items-center space-x-2">
+          <div class="w-8 h-8 bg-gradient-to-r from-green-500 to-emerald-600 rounded-full flex items-center justify-center">
+            <i class="fa-solid fa-user text-white text-sm"></i>
+          </div>
+          <div>
+            <h4 class="font-semibold text-gray-900 text-sm">Your Location</h4>
+            <p class="text-gray-600 text-xs">You are here</p>
+          </div>
+        </div>
+      </div>
+    `;
+
+    // Create popup
+    const popup = new mapboxgl.Popup({
+      offset: 25,
+      closeButton: true,
+      closeOnClick: false,
+      className: 'custom-popup user-location-popup',
+      maxWidth: '300px'
+    }).setHTML(popupContent);
+
+    // Add marker to map with fixed coordinates
+    this.userLocationMarker = new mapboxgl.Marker({
+      element: markerEl,
+      anchor: 'bottom'
+    })
+      .setLngLat([finalLng, finalLat])
+      .setPopup(popup)
+      .addTo(this.map);
+
+    // Ensure marker position stays fixed when map moves
+    // Add event listeners to prevent marker from moving
+    // Use requestAnimationFrame to batch updates and avoid unnecessary re-renders
+    let updatePending = false;
+    const ensureMarkerPosition = () => {
+      if (this.userLocationMarker && this.userLocation && !updatePending) {
+        updatePending = true;
+        requestAnimationFrame(() => {
+          if (this.userLocationMarker && this.userLocation) {
+            const currentLngLat = this.userLocationMarker.getLngLat();
+            const expectedLng = this.userLocation.longitude;
+            const expectedLat = this.userLocation.latitude;
+
+            // Only update if position has actually changed (with small tolerance for floating point)
+            if (Math.abs(currentLngLat.lng - expectedLng) > 0.000001 ||
+                Math.abs(currentLngLat.lat - expectedLat) > 0.000001) {
+              this.userLocationMarker.setLngLat([expectedLng, expectedLat]);
+            }
+          }
+          updatePending = false;
+        });
+      }
+    };
+
+    this.markerMoveListener = ensureMarkerPosition;
+    this.map.on('move', this.markerMoveListener);
+
+    this.markerZoomListener = ensureMarkerPosition;
+    this.map.on('zoom', this.markerZoomListener);
+
+    // Style the popup close button
+    popup.on('open', () => {
+      const popupEl = popup.getElement();
+      const closeButton = popupEl.querySelector('.mapboxgl-popup-close-button');
+      if (closeButton) {
+        closeButton.textContent = '×';
+        closeButton.style.position = 'absolute';
+        closeButton.style.top = '8px';
+        closeButton.style.right = '8px';
+        closeButton.style.width = '28px';
+        closeButton.style.height = '28px';
+        closeButton.style.background = 'linear-gradient(to right, #10b981, #059669)';
+        closeButton.style.color = 'white';
+        closeButton.style.borderRadius = '50%';
+        closeButton.style.border = 'none';
+        closeButton.style.boxShadow = '0 2px 5px rgba(0,0,0,0.2)';
+        closeButton.style.transition = 'all 0.2s ease-in-out';
+        closeButton.style.zIndex = '1000';
+        closeButton.style.display = 'flex';
+        closeButton.style.alignItems = 'center';
+        closeButton.style.justifyContent = 'center';
+        closeButton.style.cursor = 'pointer';
+        closeButton.style.fontSize = '18px';
+        closeButton.style.fontWeight = 'bold';
+        closeButton.style.lineHeight = '1';
+
+        // Add hover effect
+        closeButton.addEventListener('mouseenter', () => {
+          closeButton.style.transform = 'scale(1.1)';
+          closeButton.style.boxShadow = '0 4px 8px rgba(0,0,0,0.3)';
+          closeButton.style.background = 'linear-gradient(to right, #059669, #047857)';
+        });
+
+        closeButton.addEventListener('mouseleave', () => {
+          closeButton.style.transform = 'scale(1)';
+          closeButton.style.boxShadow = '0 2px 5px rgba(0,0,0,0.2)';
+          closeButton.style.background = 'linear-gradient(to right, #10b981, #059669)';
+        });
+      }
+    });
+  }
+
   addEventMarkers() {
     if (!this.eventsValue || this.eventsValue.length === 0) return;
 
-    // Group events by location (latitude, longitude)
-    const eventGroups = this.groupEventsByLocation(this.eventsValue);
-
-    // Create markers for each group
-    Object.keys(eventGroups).forEach(locationKey => {
-      const events = eventGroups[locationKey];
-      const firstEvent = events[0]; // Use first event for coordinates
-
-      if (events.length === 1) {
-        // Single event - create individual marker
-        this.createEventMarker(firstEvent);
-      } else {
-        // Multiple events - create cluster marker
-        this.createClusterMarker(events, firstEvent.latitude, firstEvent.longitude);
-      }
-    });
-  }
-
-  groupEventsByLocation(events) {
-    const groups = {};
-
-    events.forEach(event => {
+    // Create a marker for each event individually - no grouping
+    this.eventsValue.forEach(event => {
       if (event.latitude && event.longitude) {
-        // Create a key based on coordinates (rounded to 6 decimal places for grouping)
-        const lat = parseFloat(event.latitude).toFixed(6);
-        const lng = parseFloat(event.longitude).toFixed(6);
-        const key = `${lat},${lng}`;
-
-        if (!groups[key]) {
-          groups[key] = [];
-        }
-        groups[key].push(event);
+        this.createEventMarker(event);
       }
     });
-
-    return groups;
   }
+
+
 
   createEventMarker(event) {
     // Create a custom pin marker element for single events
@@ -132,16 +302,18 @@ export default class extends Controller {
     markerEl.style.width = '32px';
     markerEl.style.height = '40px';
 
-    // Pin SVG (background)
+    // Genera un id único para el gradiente SVG
+    const uniqueId = `pinGradient_${event.id}_${Math.random().toString(36).substr(2, 9)}`;
+
     markerEl.innerHTML = `
       <svg width="32" height="40" viewBox="0 0 32 40" xmlns="http://www.w3.org/2000/svg" style="display:block;">
         <defs>
-          <linearGradient id="pinGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+          <linearGradient id="${uniqueId}" x1="0%" y1="0%" x2="0%" y2="100%">
             <stop offset="0%" style="stop-color:#8b5cf6;stop-opacity:1" />
             <stop offset="100%" style="stop-color:#3b82f6;stop-opacity:1" />
           </linearGradient>
         </defs>
-        <path d="M16 0C7.163 0 0 7.163 0 16c0 11.25 16 24 16 24s16-12.75 16-24C32 7.163 24.837 0 16 0z" fill="url(#pinGradient)"/>
+        <path d="M16 0C7.163 0 0 7.163 0 16c0 11.25 16 24 16 24s16-12.75 16-24C32 7.163 24.837 0 16 0z" fill="url(#${uniqueId})"/>
       </svg>
     `;
 
@@ -174,12 +346,14 @@ export default class extends Controller {
       maxWidth: '400px'
     }).setHTML(popupContent);
 
-    // Add marker to map - EXACTLY like cluster marker
+    // Add marker to map con coordenadas numéricas
+    const lng = Number(event.longitude);
+    const lat = Number(event.latitude);
     const marker = new mapboxgl.Marker({
       element: markerEl,
       anchor: 'bottom'
     })
-      .setLngLat([event.longitude, event.latitude])
+      .setLngLat([lng, lat])
       .setPopup(popup)
       .addTo(this.map);
 
@@ -452,35 +626,29 @@ export default class extends Controller {
     // But we can add any additional functionality here if needed
   }
 
-  fitMapToEvents() {
-    if (!this.eventsValue || this.eventsValue.length === 0) return
 
-    const coordinates = this.eventsValue
-      .filter(event => event.latitude && event.longitude)
-      .map(event => [event.longitude, event.latitude])
-
-    if (coordinates.length === 0) return
-
-    if (coordinates.length === 1) {
-      // If only one event, center on it with a reasonable zoom
-      this.map.setCenter(coordinates[0])
-      this.map.setZoom(12)
-    } else {
-      // If multiple events, fit bounds to include all
-      const bounds = new mapboxgl.LngLatBounds()
-      coordinates.forEach(coord => bounds.extend(coord))
-      this.map.fitBounds(bounds, {
-        padding: 50,
-        maxZoom: 15
-      })
-    }
-  }
 
   disconnect() {
+    // Clean up marker event listeners
+    if (this.markerMoveListener && this.map) {
+      this.map.off('move', this.markerMoveListener);
+      this.markerMoveListener = null;
+    }
+    if (this.markerZoomListener && this.map) {
+      this.map.off('zoom', this.markerZoomListener);
+      this.markerZoomListener = null;
+    }
+
     // Clean up the map when disconnecting (for page navigation)
     if (this.map) {
       this.map.remove();
       this.map = null;
+    }
+
+    // Clean up user location marker
+    if (this.userLocationMarker) {
+      this.userLocationMarker.remove();
+      this.userLocationMarker = null;
     }
 
     // Clean up event listeners
@@ -499,6 +667,10 @@ export default class extends Controller {
   resize() {
     if (this.map) {
       this.map.resize();
+      // Force a repaint to ensure all markers stay in their exact positions
+      setTimeout(() => {
+        this.map.triggerRepaint();
+      }, 100);
     }
   }
 
@@ -508,8 +680,6 @@ export default class extends Controller {
       this.initializeMap();
     } else {
       this.resize();
-      // Also refit to events to ensure they're visible
-      this.fitMapToEvents();
     }
   }
 
@@ -708,6 +878,7 @@ export default class extends Controller {
       }
     }, 100);
   }
+// TODO: Add the time zone to the date string
 
   formatEventDate(startTime, endTime) {
     const start = new Date(startTime);
